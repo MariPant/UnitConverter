@@ -55,7 +55,9 @@ Rounding:
 - `MainActivity.kt` - Hosts Compose content and displays `UnitConverter()`
 - `UnitConverter()` - Main composable (UI + conversion logic)
 
-## Demo
+## 🎬 Demo
+
+![App Demo](Demo.gif)
 
 
 <p align="center">
