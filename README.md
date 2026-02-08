@@ -1,5 +1,10 @@
 # UnitConverter (Android)
 
+<p align="center">
+  <img src="demo.gif" width="300" alt="Unit Converter Demo">
+</p>
+
+
 A simple **Jetpack Compose** unit conversion app (length units).
 It converts between **cm, m, ft, mm** and updates the result instantly as you type or change units.
 
@@ -54,12 +59,3 @@ Rounding:
 
 - `MainActivity.kt` - Hosts Compose content and displays `UnitConverter()`
 - `UnitConverter()` - Main composable (UI + conversion logic)
-
-## 🎬 Demo
-
-![App Demo](Demo.gif)
-
-
-<p align="center">
-  <img src="demo.gif" width="300" alt="Unit Converter Demo">
-</p>
