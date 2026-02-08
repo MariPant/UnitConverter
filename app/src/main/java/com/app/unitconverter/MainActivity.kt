@@ -34,16 +34,23 @@ import androidx.compose.material3.Text
 import com.app.unitconverter.ui.theme.UnitConverterTheme
 import kotlin.math.roundToInt
 
+/**
+ * Main entry Activity. Hosts Compose content.
+ */
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // setContent replaces the normal XML layout system with Compose UI.
         setContent {
+            // App theme wrapper (colors, typography, shapes).
             UnitConverterTheme {
-                // A surface container using the 'background' color from the theme
+                // Surface is a Material container that applies background color, etc.
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
+                    // Render the main screen composable
                     UnitConverter()
                 }
             }
@@ -51,72 +58,117 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+/**
+ * Main UI for the Unit Converter screen.
+ *
+ * This implementation converts length units:
+ * cm, m, ft, mm
+ *
+ * Internally, conversion factors are relative to meters (m).
+ * Example: 1 ft = 0.3048 m, so factor for "ft" is 0.3048.
+ */
 @Composable
 fun UnitConverter() {
 
+    // Text entered by the user
     var inputValue by remember { mutableStateOf("") }
+
+    // Output text shown in Result field
     var outputValue by remember { mutableStateOf("") }
+
+    // Labels shown on the dropdown buttons
     var inputUnit by remember { mutableStateOf("m") }
     var outputUnit by remember { mutableStateOf("m") }
-    var iExpanded by remember { mutableStateOf(false) }
-    var oExpanded by remember { mutableStateOf((false) )}
-    val iConversionFactor = remember { mutableStateOf(1.00)}
-    val oConversionFactor = remember { mutableStateOf(1.00)}
 
+    // Whether each dropdown is currently open
+    var iExpanded by remember { mutableStateOf(false) }
+    var oExpanded by remember { mutableStateOf(false) }
+
+    // Conversion factors relative to meters.
+    // Using mutableStateOf allows recomposition when they change.
+    val iConversionFactor = remember { mutableStateOf(1.00) }
+    val oConversionFactor = remember { mutableStateOf(1.00) }
+
+    /**
+     * Converts the inputValue from input unit -> output unit.
+     *
+     * Formula (based on meters as base unit):
+     * inputInMeters = input * inputFactor
+     * output = inputInMeters / outputFactor
+     */
     fun convertUnits() {
+        // Safely parse input (if empty or invalid -> 0.0)
         val inputValueDouble = inputValue.toDoubleOrNull() ?: 0.0
 
+        // Convert via meters as base unit
         val raw = inputValueDouble * iConversionFactor.value / oConversionFactor.value
-        val result = (raw * 100).roundToInt() / 100.0   // round to 2 decimals
 
+        // Round to 2 decimals (simple rounding)
+        val result = (raw * 100).roundToInt() / 100.0
+
+        // Update output state (UI updates automatically)
         outputValue = result.toString()
     }
 
-    Column (
+    // Main layout: center content on screen
+    Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
-    ){
+    ) {
+        // Title
         Text("Unit Converter", style = MaterialTheme.typography.headlineLarge)
+
         Spacer(modifier = Modifier.height(16.dp))
-        Row (
+
+        // Row of two text fields: input and result
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalAlignment = Alignment.CenterVertically
-        ){
+        ) {
+            // User input field
             OutlinedTextField(
                 value = inputValue,
-                onValueChange = {
-                    inputValue = it
+                onValueChange = { newText ->
+                    // Update input and immediately convert
+                    inputValue = newText
                     convertUnits()
                 },
                 label = { Text("Enter value") },
                 modifier = Modifier.weight(1f)
             )
+
+            // Output/result field (read-only)
             OutlinedTextField(
                 value = outputValue,
-                onValueChange = {},
+                onValueChange = { /* readOnly, do nothing */ },
                 label = { Text("Result") },
                 modifier = Modifier.weight(1f),
                 readOnly = true
             )
         }
+
+        // Row with two dropdown unit selectors
         Row {
-            // Here all the Ui elements will be stacked next to each other
-            // Input Box
-            Box (
-                modifier = Modifier.padding(16.dp)
-            ){
-                // Input Button
+            // INPUT unit selector box
+            Box(modifier = Modifier.padding(16.dp)) {
                 Button(onClick = { iExpanded = true }) {
                     Text(text = inputUnit)
                     Icon(
                         Icons.Default.KeyboardArrowDown,
                         contentDescription = "Arrow Down"
                     )
-                    DropdownMenu(expanded = iExpanded, onDismissRequest = { iExpanded = false }) {
+
+                    // Input dropdown menu
+                    DropdownMenu(
+                        expanded = iExpanded,
+                        onDismissRequest = { iExpanded = false }
+                    ) {
+                        // Each item sets the unit label + conversion factor then converts
+
                         DropdownMenuItem(
                             text = { Text("cm") },
                             onClick = {
@@ -126,6 +178,7 @@ fun UnitConverter() {
                                 convertUnits()
                             }
                         )
+
                         DropdownMenuItem(
                             text = { Text("m") },
                             onClick = {
@@ -135,6 +188,7 @@ fun UnitConverter() {
                                 convertUnits()
                             }
                         )
+
                         DropdownMenuItem(
                             text = { Text("ft") },
                             onClick = {
@@ -144,6 +198,7 @@ fun UnitConverter() {
                                 convertUnits()
                             }
                         )
+
                         DropdownMenuItem(
                             text = { Text("mm") },
                             onClick = {
@@ -156,18 +211,21 @@ fun UnitConverter() {
                     }
                 }
             }
-            // Output Box
-            Box (
-                modifier = Modifier.padding(16.dp)
-            ){
-                // Output Button
+
+            // OUTPUT unit selector box
+            Box(modifier = Modifier.padding(16.dp)) {
                 Button(onClick = { oExpanded = true }) {
                     Text(text = outputUnit)
                     Icon(
                         Icons.Default.KeyboardArrowDown,
                         contentDescription = "Arrow Down"
                     )
-                    DropdownMenu(expanded = oExpanded, onDismissRequest = { oExpanded = false }) {
+
+                    // Output dropdown menu
+                    DropdownMenu(
+                        expanded = oExpanded,
+                        onDismissRequest = { oExpanded = false }
+                    ) {
                         DropdownMenuItem(
                             text = { Text("cm") },
                             onClick = {
@@ -177,6 +235,7 @@ fun UnitConverter() {
                                 convertUnits()
                             }
                         )
+
                         DropdownMenuItem(
                             text = { Text("m") },
                             onClick = {
@@ -186,6 +245,7 @@ fun UnitConverter() {
                                 convertUnits()
                             }
                         )
+
                         DropdownMenuItem(
                             text = { Text("ft") },
                             onClick = {
@@ -195,6 +255,7 @@ fun UnitConverter() {
                                 convertUnits()
                             }
                         )
+
                         DropdownMenuItem(
                             text = { Text("mm") },
                             onClick = {
@@ -211,8 +272,11 @@ fun UnitConverter() {
     }
 }
 
-    @Preview
-    @Composable
-    fun UnitConverterPreview() {
-        UnitConverter()
-    }
+/**
+ * Preview in Android Studio (Design/Preview panel).
+ */
+@Preview
+@Composable
+fun UnitConverterPreview() {
+    UnitConverter()
+}
